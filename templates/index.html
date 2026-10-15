@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Cleaning Berlin - 28 Units Dashboard</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="header">
+    <h1>🧹 Smart Cleaning Berlin</h1>
+    <p>Automation Platform for 28 Apartments | Smoobu API Integration | AWS S3 + EC2</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card"><h3 id="totalProps">28</h3><p>Total Properties</p></div>
+    <div class="stat-card"><h3 id="totalBuildings">7</h3><p>Buildings</p></div>
+    <div class="stat-card urgent"><h3 id="checkoutToday">0</h3><p>Check-outs Today</p></div>
+    <div class="stat-card"><h3 id="checkinToday">0</h3><p>Check-ins Today</p></div>
+    <div class="stat-card"><h3 id="pendingCleaning">0</h3><p>Pending Cleaning</p></div>
+    <div class="stat-card revenue"><h3 id="revenue">€0</h3><p>Revenue Tracked</p></div>
+</div>
+
+<div class="container">
+    <div class="section">
+        <h2>🔴 Today's Check-outs - Urgent Cleaning</h2>
+        <div id="checkoutList">Loading...</div>
+    </div>
+    <div class="section">
+        <h2>🟢 Today's Check-ins - Ready Check</h2>
+        <div id="checkinList">Loading...</div>
+    </div>
+    <div class="section">
+        <h2>🏢 All 28 Properties - Berlin</h2>
+        <div id="allProps">Loading...</div>
+    </div>
+</div>
+
+<div class="footer">
+    <p>Tech Stack: Python, Flask, Smoobu API, REST API, MySQL (design), AWS S3 Static Hosting + EC2 | GitHub: smart-cleaning-berlin | Live on AWS</p>
+</div>
+
+<script>
+async function loadData() {
+    try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+        
+        document.getElementById('totalProps').textContent = data.total_properties;
+        document.getElementById('totalBuildings').textContent = data.total_buildings;
+        document.getElementById('checkoutToday').textContent = data.checkout_today.length;
+        document.getElementById('checkinToday').textContent = data.checkin_today.length;
+        document.getElementById('pendingCleaning').textContent = data.pending_cleaning;
+        document.getElementById('revenue').textContent = '€' + data.monthly_revenue;
+
+        let checkoutHtml = '';
+        if(data.checkout_today.length === 0) checkoutHtml = '<p>No check-outs today</p>';
+        else data.checkout_today.forEach(b => {
+            checkoutHtml += `<div class="task-card urgent"><b>${b.building} - ${b.apartment}</b> | ${b.platform} | Guest: ${b.guest}<br>Cleaner: <span class="badge">${b.cleaner}</span> | Revenue: €${b.revenue}</div>`;
+        });
+        document.getElementById('checkoutList').innerHTML = checkoutHtml;
+
+        let checkinHtml = '';
+        if(data.checkin_today.length === 0) checkinHtml = '<p>No check-ins today</p>';
+        else data.checkin_today.forEach(b => {
+            checkinHtml += `<div class="task-card checkin"><b>${b.building} - ${b.apartment}</b> | ${b.platform}<br>Cleaner: ${b.cleaner} | Status: ${b.status}</div>`;
+        });
+        document.getElementById('checkinList').innerHTML = checkinHtml;
+
+        let propsHtml = '<table><tr><th>ID</th><th>Building</th><th>Apartment</th><th>Type</th><th>Floor</th></tr>';
+        data.all_properties.forEach(p => {
+            propsHtml += `<tr><td>${p.id}</td><td>${p.building}</td><td><b>${p.name}</b></td><td>${p.type}</td><td>${p.floor}</td></tr>`;
+        });
+        propsHtml += '</table>';
+        document.getElementById('allProps').innerHTML = propsHtml;
+
+    } catch(e) {
+        console.error(e);
+        document.getElementById('checkoutList').innerHTML = 'Error loading - run backend: python app.py';
+    }
+}
+loadData();
+</script>
+</body>
+</html>
