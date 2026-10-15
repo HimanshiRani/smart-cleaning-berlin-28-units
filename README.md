@@ -26,5 +26,4 @@ pip install -r requirements.txt
 python app.py
 -> http://127.0.0.1:5000
 
-## For Blue Card / Ausländerbehörde
-This project proves IT Management role in cleaning company - automation of 28 listings via API integration, not manual cleaning.
+##Role:IT Operations manager - Automation of 28 listings via API integration
